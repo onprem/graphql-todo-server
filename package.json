@@ -1,0 +1,13 @@
+{
+  "name": "graphql-todo-server",
+  "version": "0.1.0",
+  "description": "Backend for a TODO app using GraphQL",
+  "main": "server.js",
+  "repository": "https://github.com/prmsrswt/graphql-todo-server",
+  "author": "Prem Kumar <prmsrswt@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "apollo-server": "^2.6.1",
+    "graphql": "^14.3.1"
+  }
+}
