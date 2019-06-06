@@ -2,7 +2,7 @@ const { gql } = require('apollo-server');
 
 const typeDefs = gql`
 	type Query {
-		allTodos( limit: Int,	id: ID ): [Todo]!
+		allTodos( limit: Int,	id: ID ): [Todo!]
 		me: User
 		hello: String
 	}

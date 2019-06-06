@@ -2,6 +2,10 @@ const { AuthenticationError } = require('apollo-server');
 const jwt = require('jsonwebtoken');
 const secret = 'Again,iAmVeryBadAtThis';
 
+const getRandomInt = (max) =>{
+	return Math.floor(Math.random() * Math.floor(max));
+}
+
 const resolvers = {
 	Query: {
 		hello: () => 'world',
@@ -14,6 +18,24 @@ const resolvers = {
 			} else {
 				throw new AuthenticationError('must authenticate');
 			}
+		},
+		allTodos: async ( _, args, context ) => {
+			const data = await context.db.collection('users').aggregate( [ 
+				{ $unwind: "$todos" },
+				{ $project: {
+					_id: 0,
+					id: "$todos.id",
+					title: "$todos.title",
+					isComplete: "$todos.isComplete",
+					user: {
+						id: "$_id",
+						name: "$name",
+						email: "$email"
+					}
+				}}
+			] ).toArray();
+			console.log(data);
+			return data;
 		}
 	},
 	User: {
@@ -37,6 +59,26 @@ const resolvers = {
 			});
 			console.log('jwt:', token);
 			return token;
+		},
+		addTodo: async ( _, args, context ) => {
+			const toDo = {
+				id: `${context.id}-${getRandomInt(9999)}`,
+				title: args.title,
+				isComplete: false,
+				timestamp: Date.now()
+			}
+			await context.db.collection('users').updateOne( 
+				{ _id: context.id },
+				{ $push: 
+					{ todos: toDo }
+				}
+			)
+			return {
+				code: '200',
+				success: true,
+				message: 'successfully added ToDo',
+				todo: toDo
+			}
 		}
 	},
 	MutationResponse: {
