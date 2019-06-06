@@ -5,9 +5,15 @@
   "main": "server.js",
   "repository": "https://github.com/prmsrswt/graphql-todo-server",
   "author": "Prem Kumar <prmsrswt@gmail.com>",
+  "scripts": {
+    "start": "nodemon src/index.js"
+  },
   "license": "MIT",
   "dependencies": {
     "apollo-server": "^2.6.1",
     "graphql": "^14.3.1"
+  },
+  "devDependencies": {
+    "nodemon": "^1.19.1"
   }
 }
