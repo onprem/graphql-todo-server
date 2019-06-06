@@ -1,29 +1,42 @@
+const { AuthenticationError } = require('apollo-server');
+const jwt = require('jsonwebtoken');
+const secret = 'Again,iAmVeryBadAtThis';
+
 const resolvers = {
 	Query: {
 		hello: () => 'world',
-		me: () => {
-			return {
-				name: "Prem Kumar",
-				email: "prem@premsarswat.me"
+		me: ( _, __, context ) => {
+			if( context.isValid ) {
+				return {
+					id: context.id,
+					email: context.email
+				}
+			} else {
+				throw new AuthenticationError('must authenticate');
 			}
 		}
 	},
 	User: {
-		id: () => 1,
-		todos: ( user ) => {
-			console.log( user );
-			return [
-				{
-					title: "My First todo",
-					isComplete: false
-				}
-			]
+		name: async ( user, _, context ) => {
+			const users = await context.db.collection('users').find({ _id: user.id }).toArray();
+			return users[0].name;
+		},
+		todos: async ( user, _, context ) => {
+			const users = await context.db.collection('users').find({ _id: user.id }).toArray();
+			return users[0].todos;
 		}
 	},
 	Mutation: {
 		login: ( _, args, context ) =>{
 			console.log( args, context.token );
-			return Buffer.from(Buffer.from( args.email ).toString('base64'),  'base64').toString('ascii');
+			const email = args.email;
+			const id = 1;
+			const payload = { email, id };
+			const token = jwt.sign(payload, secret, {
+				expiresIn: '30d'
+			});
+			console.log('jwt:', token);
+			return token;
 		}
 	},
 	MutationResponse: {
