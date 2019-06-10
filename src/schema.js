@@ -10,7 +10,7 @@ const typeDefs = gql`
 		id: ID!
 		title: String!
 		isComplete: Boolean!
-		timestamp: Int
+		timestamp: String
 		user: User!
 	}
 	type User {
@@ -23,7 +23,7 @@ const typeDefs = gql`
 	type Mutation {
 		addTodo( title: String! ): TodoResponse!
 
-		changeTodo( todoId: ID! ): TodoResponse!
+		toggleTodo( todoId: ID! ): TodoResponse!
 
 		login( email: String! ): String # login token
 

@@ -27,6 +27,7 @@ const resolvers = {
 					_id: 0,
 					id: "$todos.id",
 					title: "$todos.title",
+					timestamp: "$todos.timestamp",
 					isComplete: "$todos.isComplete",
 					user: {
 						id: "$_id",
@@ -96,6 +97,32 @@ const resolvers = {
 				code: '200',
 				success: true,
 				message: 'successfully added ToDo',
+				todo: toDo
+			}
+		},
+		toggleTodo: async ( _, args, context ) => {
+			const [usr] = await context.db.collection('users').aggregate(
+				{ $match: { _id: ObjectId(context.id) } },
+				{ $unwind: '$todos' },
+				{ $match: { 'todos.id': args.id } }
+			).toArray();
+			const isComplete = !usr.todos.isComplete;
+			const toDo = {
+				id: usr.todos.id,
+				title: usr.todos.title,
+				isComplete: isComplete,
+				timestamp: usr.todos.timestamp
+			};
+			await context.db.collection('users').updateOne(
+				{ _id: ObjectId(context.id) },
+				{ $set: { "todos.$[elem].isComplete": isComplete } },
+				{ arrayFilters: [ { "elem.id": args.todoId } ] }
+			);
+
+			return {
+				code: '200',
+				success: true,
+				message: 'successfully toggled ToDo',
 				todo: toDo
 			}
 		}

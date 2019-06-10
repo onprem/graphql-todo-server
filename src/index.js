@@ -3,16 +3,21 @@ const MongoClient = require('mongodb').MongoClient;
 const typeDefs = require('./schema');
 const resolvers = require('./resolvers');
 const conText = require('./context');
+require('dotenv').config();
 
-const url = 'mongodb://gql:gqlpass@one.db.magehost.com:3306,two.db.magehost.com;3306/gqlTodo?replicaSet=rs0';
-const dbName = 'gqlTodo'
+const db_user = process.env.DB_USER;
+const db_pass = process.env.DB_PASS;
+const db_name = process.env.DB_NAME;
+const db_host = process.env.DB_HOST;
+
+const url = `mongodb://${db_user}:${db_pass}@${db_host}`;
 const client = new MongoClient(url, { useNewUrlParser: true });
 
 client.connect((err) => {
 	if (err)
 		console.log('DB connection failed:', err);
 	else {
-		const db = client.db(dbName);
+		const db = client.db(db_name);
 
 		const server = new ApolloServer({ typeDefs, resolvers , context: ({ req, datab = db }) => conText({ req, datab }) });
 
