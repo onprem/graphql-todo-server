@@ -1,4 +1,5 @@
 const { AuthenticationError } = require('apollo-server');
+const ObjectId = require('mongodb').ObjectId;
 const jwt = require('jsonwebtoken');
 const secret = 'Again,iAmVeryBadAtThis';
 
@@ -34,31 +35,49 @@ const resolvers = {
 					}
 				}}
 			] ).toArray();
-			console.log(data);
+			//console.log(data);
 			return data;
 		}
 	},
 	User: {
 		name: async ( user, _, context ) => {
-			const users = await context.db.collection('users').find({ _id: user.id }).toArray();
+			const users = await context.db.collection('users').find({ _id: ObjectId(user.id) }).project({ name: 1 }).toArray();
 			return users[0].name;
 		},
 		todos: async ( user, _, context ) => {
-			const users = await context.db.collection('users').find({ _id: user.id }).toArray();
+			const users = await context.db.collection('users').find({ _id: ObjectId(user.id) }).project({ todos: 1 }).toArray();
 			return users[0].todos;
 		}
 	},
 	Mutation: {
-		login: ( _, args, context ) =>{
-			console.log( args, context.token );
-			const email = args.email;
-			const id = 1;
-			const payload = { email, id };
-			const token = jwt.sign(payload, secret, {
-				expiresIn: '30d'
-			});
-			console.log('jwt:', token);
-			return token;
+		login: async ( _, args, context ) =>{
+			//console.log( args, context.token );
+			const data = await context.db.collection('users').find({ email: args.email }).project({ _id: 1, email: 1 }).toArray();
+			if( data.length === 1 ){
+				const id = data[0]._id.toString();
+				const email = data[0].email;
+				const payload = { email, id };
+				const token = jwt.sign(payload, secret, {
+					expiresIn: '30d'
+				});
+				//console.log('payload:', payload);
+				return token;
+			}
+			//console.log(data);
+			return null;
+		},
+		signup: async ( _, args, context ) => {
+			const data = await context.db.collection('users').find({ email: args.email }).project({ _id: 1 }).toArray();
+			if( data.length === 0 ){
+				const r = await context.db.collection('users').insertOne({ email: args.email, name: args.name, todos: [] });
+				//console.log(r);
+				return {
+					id: r.insertedId,
+					name: args.name,
+					email: args.email
+				};
+			}
+			return null;
 		},
 		addTodo: async ( _, args, context ) => {
 			const toDo = {
@@ -68,7 +87,7 @@ const resolvers = {
 				timestamp: Date.now()
 			}
 			await context.db.collection('users').updateOne( 
-				{ _id: context.id },
+				{ _id: ObjectId(context.id) },
 				{ $push: 
 					{ todos: toDo }
 				}

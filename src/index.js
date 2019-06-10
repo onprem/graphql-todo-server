@@ -4,7 +4,7 @@ const typeDefs = require('./schema');
 const resolvers = require('./resolvers');
 const conText = require('./context');
 
-const url = 'mongodb://localhost:27017/gqlTodo';
+const url = 'mongodb://gql:gqlpass@one.db.magehost.com:3306,two.db.magehost.com;3306/gqlTodo?replicaSet=rs0';
 const dbName = 'gqlTodo'
 const client = new MongoClient(url, { useNewUrlParser: true });
 

@@ -10,6 +10,7 @@ const typeDefs = gql`
 		id: ID!
 		title: String!
 		isComplete: Boolean!
+		timestamp: Int
 		user: User!
 	}
 	type User {
