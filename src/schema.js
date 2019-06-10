@@ -25,9 +25,9 @@ const typeDefs = gql`
 
 		toggleTodo( todoId: ID! ): TodoResponse!
 
-		login( email: String! ): String # login token
+		login( email: String!, password: String! ): String # login token
 
-		signup( name: String!, email: String! ): User
+		signup( name: String!, email: String!, password: String! ): User
 	}
 
 	interface MutationResponse {

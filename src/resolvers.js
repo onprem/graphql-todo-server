@@ -1,4 +1,5 @@
 const { AuthenticationError } = require('apollo-server');
+const bcrypt = require('bcrypt');
 const ObjectId = require('mongodb').ObjectId;
 const jwt = require('jsonwebtoken');
 const secret = 'Again,iAmVeryBadAtThis';
@@ -53,16 +54,21 @@ const resolvers = {
 	Mutation: {
 		login: async ( _, args, context ) =>{
 			//console.log( args, context.token );
-			const data = await context.db.collection('users').find({ email: args.email }).project({ _id: 1, email: 1 }).toArray();
+			const data = await context.db.collection('users').find({ email: args.email }).project({ _id: 1, email: 1, hash: 1 }).toArray();
 			if( data.length === 1 ){
-				const id = data[0]._id.toString();
-				const email = data[0].email;
-				const payload = { email, id };
-				const token = jwt.sign(payload, secret, {
-					expiresIn: '30d'
-				});
-				//console.log('payload:', payload);
-				return token;
+				const match = await bcrypt.compare( args.password, data[0].hash );
+				if(match){
+					const id = data[0]._id.toString();
+					const email = data[0].email;
+					const payload = { email, id };
+					const token = jwt.sign(payload, secret, {
+						expiresIn: '30d'
+					});
+					//console.log('payload:', payload);
+					return token;
+				}
+				else
+					throw new AuthenticationError("Invalid password");
 			}
 			//console.log(data);
 			return null;
@@ -70,7 +76,8 @@ const resolvers = {
 		signup: async ( _, args, context ) => {
 			const data = await context.db.collection('users').find({ email: args.email }).project({ _id: 1 }).toArray();
 			if( data.length === 0 ){
-				const r = await context.db.collection('users').insertOne({ email: args.email, name: args.name, todos: [] });
+				const hash = await bcrypt.hash( args.password, 10 );
+				const r = await context.db.collection('users').insertOne({ email: args.email, name: args.name, hash: hash, todos: [] });
 				//console.log(r);
 				return {
 					id: r.insertedId,
