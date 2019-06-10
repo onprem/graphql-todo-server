@@ -132,6 +132,18 @@ const resolvers = {
 				message: 'successfully toggled ToDo',
 				todo: toDo
 			}
+		},
+		removeTodo: async ( _, args, context ) => {
+			await context.db.collection('users').updateOne(
+				{ _id: ObjectId(context.id) },
+				{ $pull: { todos: { id: args.todoId } } }
+			);
+
+			return {
+				code: '200',
+				success: true,
+				message: 'successfully removed ToDo'
+			}
 		}
 	},
 	MutationResponse: {

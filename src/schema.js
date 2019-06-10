@@ -25,6 +25,8 @@ const typeDefs = gql`
 
 		toggleTodo( todoId: ID! ): TodoResponse!
 
+		removeTodo( todoId: ID! ): TodoResponse!
+
 		login( email: String!, password: String! ): String # login token
 
 		signup( name: String!, email: String!, password: String! ): User
