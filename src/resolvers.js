@@ -43,18 +43,18 @@ const resolvers = {
 	},
 	User: {
 		name: async ( user, _, context ) => {
-			const users = await context.db.collection('users').find({ _id: ObjectId(user.id) }).project({ name: 1 }).toArray();
+			const users = await context.db.collection('users').find({ _id: ObjectId(user.id) }).project({ _id: 0, name: 1 }).toArray();
 			return users[0].name;
 		},
 		todos: async ( user, _, context ) => {
-			const users = await context.db.collection('users').find({ _id: ObjectId(user.id) }).project({ todos: 1 }).toArray();
+			const users = await context.db.collection('users').find({ _id: ObjectId(user.id) }).project({ _id: 0, todos: 1 }).toArray();
 			return users[0].todos;
 		}
 	},
 	Mutation: {
 		login: async ( _, args, context ) =>{
 			//console.log( args, context.token );
-			const data = await context.db.collection('users').find({ email: args.email }).project({ _id: 1, email: 1, hash: 1 }).toArray();
+			const data = await context.db.collection('users').find({ email: args.email }).project({ email: 1, hash: 1 }).toArray();
 			if( data.length === 1 ){
 				const match = await bcrypt.compare( args.password, data[0].hash );
 				if(match){
@@ -88,62 +88,88 @@ const resolvers = {
 			return null;
 		},
 		addTodo: async ( _, args, context ) => {
-			const toDo = {
-				id: `${context.id}-${getRandomInt(9999)}`,
-				title: args.title,
-				isComplete: false,
-				timestamp: Date.now()
-			}
-			await context.db.collection('users').updateOne( 
-				{ _id: ObjectId(context.id) },
-				{ $push: 
-					{ todos: toDo }
+			if( context.isValid ) {
+				const toDo = {
+					id: `${context.id}-${getRandomInt(9999)}`,
+					title: args.title,
+					isComplete: false,
+					timestamp: Date.now()
 				}
-			)
-			return {
-				code: '200',
-				success: true,
-				message: 'successfully added ToDo',
-				todo: toDo
+				await context.db.collection('users').updateOne( 
+					{ _id: ObjectId(context.id) },
+					{ $push: 
+						{ todos: toDo }
+					}
+				)
+				return {
+					code: '200',
+					success: true,
+					message: 'successfully added ToDo',
+					user: {
+						id: context.id,
+						email: context.email
+					}
+				}
 			}
+			else
+				throw new AuthenticationError('Authentication required!')
 		},
 		toggleTodo: async ( _, args, context ) => {
-			const [usr] = await context.db.collection('users').aggregate(
-				{ $match: { _id: ObjectId(context.id) } },
-				{ $unwind: '$todos' },
-				{ $match: { 'todos.id': args.id } }
-			).toArray();
-			const isComplete = !usr.todos.isComplete;
-			const toDo = {
-				id: usr.todos.id,
-				title: usr.todos.title,
-				isComplete: isComplete,
-				timestamp: usr.todos.timestamp
-			};
-			await context.db.collection('users').updateOne(
-				{ _id: ObjectId(context.id) },
-				{ $set: { "todos.$[elem].isComplete": isComplete } },
-				{ arrayFilters: [ { "elem.id": args.todoId } ] }
-			);
+			if( context.isValid ) {
+				console.log('toggling todo with id', args.todoId);
+				const [ usr ] = await context.db.collection('users').aggregate(
+					[
+						{ $match: { _id: ObjectId(context.id) } },
+						{ $unwind: '$todos' },
+						{ $match: { 'todos.id': args.todoId } }
+					]
+				).toArray();
+				const isComplete = !usr.todos.isComplete;
+				const toDo = {
+					id: usr.todos.id,
+					title: usr.todos.title,
+					isComplete: isComplete,
+					timestamp: usr.todos.timestamp
+				};
+				await context.db.collection('users').updateOne(
+					{ _id: ObjectId(context.id) },
+					{ $set: { "todos.$[elem].isComplete": isComplete } },
+					{ arrayFilters: [ { "elem.id": args.todoId } ] }
+				);
 
-			return {
-				code: '200',
-				success: true,
-				message: 'successfully toggled ToDo',
-				todo: toDo
+				return {
+					code: '200',
+					success: true,
+					message: 'successfully toggled ToDo',
+					user: {
+						id: context.id,
+						email: context.email
+					}
+				}
 			}
+			else
+				throw new AuthenticationError('Authentication required!');
 		},
 		removeTodo: async ( _, args, context ) => {
-			await context.db.collection('users').updateOne(
-				{ _id: ObjectId(context.id) },
-				{ $pull: { todos: { id: args.todoId } } }
-			);
+			if( context.isValid ) {
+				console.log('removing todo with id', args.todoId);
+				await context.db.collection('users').updateOne(
+					{ _id: ObjectId(context.id) },
+					{ $pull: { todos: { id: args.todoId } } }
+				);
 
-			return {
-				code: '200',
-				success: true,
-				message: 'successfully removed ToDo'
+				return {
+					code: '200',
+					success: true,
+					message: 'successfully removed ToDo',
+					user: {
+						id: context.id,
+						email: context.email
+					}
+				}
 			}
+			else
+				throw new AuthenticationError('Authentication required!')
 		}
 	},
 	MutationResponse: {

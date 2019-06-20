@@ -9,6 +9,7 @@ const context = ({ req, datab }) => {
 		id: null,
 		db: datab
 	}
+	//console.log('wonka!: ', req.body, req.headers.authorization);
 	if (!req.headers.authorization) {
 		// ulta
 	} else {

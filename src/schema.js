@@ -42,7 +42,7 @@ const typeDefs = gql`
 		code: String
 		success: Boolean!
 		message: String
-		todo: Todo
+		user: User
 	}
 `;
 
