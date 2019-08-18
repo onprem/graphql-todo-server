@@ -15,7 +15,8 @@
     "dotenv": "^8.1.0",
     "graphql": "^14.4.2",
     "jsonwebtoken": "^8.5.1",
-    "mongodb": "^3.3.0"
+    "mongodb": "^3.3.0",
+    "saslprep": "^1.0.3"
   },
   "devDependencies": {
     "nodemon": "^1.19.1"

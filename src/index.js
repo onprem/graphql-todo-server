@@ -11,7 +11,7 @@ const db_name = process.env.DB_NAME;
 const db_host = process.env.DB_HOST;
 
 const url = `mongodb://${db_user}:${db_pass}@${db_host}`;
-const client = new MongoClient(url, { useNewUrlParser: true });
+const client = new MongoClient(url, { useNewUrlParser: true, useUnifiedTopology: true });
 
 client.connect((err) => {
 	if (err)
