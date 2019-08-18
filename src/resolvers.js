@@ -1,4 +1,4 @@
-const { AuthenticationError } = require('apollo-server');
+const { AuthenticationError, UserInputError } = require('apollo-server');
 const bcrypt = require('bcrypt');
 const ObjectId = require('mongodb').ObjectId;
 const jwt = require('jsonwebtoken');
@@ -51,6 +51,17 @@ const resolvers = {
 			return users[0].todos;
 		}
 	},
+	Todo: {
+		user: async ( todo, _, context ) => {
+			if(todo.user){
+				return todo.user;
+			}
+			return {
+				id: context.id,
+				email: context.email
+			}
+		}
+	},
 	Mutation: {
 		login: async ( _, args, context ) =>{
 			//console.log( args, context.token );
@@ -71,7 +82,7 @@ const resolvers = {
 					throw new AuthenticationError("Invalid password");
 			}
 			//console.log(data);
-			return null;
+			throw new AuthenticationError("Invalid username or password");
 		},
 		signup: async ( _, args, context ) => {
 			const data = await context.db.collection('users').find({ email: args.email }).project({ _id: 1 }).toArray();
@@ -85,7 +96,10 @@ const resolvers = {
 					email: args.email
 				};
 			}
-			return null;
+			else {
+				throw new UserInputError('Email already registered');
+			}
+			throw new UserInputError('Some error occured');
 		},
 		addTodo: async ( _, args, context ) => {
 			if( context.isValid ) {
