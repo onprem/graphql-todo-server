@@ -1,0 +1,28 @@
+version: 2.1
+
+workflows:
+  test:
+    jobs:
+      - test
+
+jobs:
+  test:
+    docker:
+      - image: circleci/node:10.16.0
+    steps:
+      - checkout
+
+      - restore_cache:
+         keys:
+           - v1-dependencies-{{ checksum "package.json" }}
+           # fallback to latest cache if exact match not found
+           - v1-dependencies-
+
+      - run: yarn
+
+      - run: yarn test
+
+      - save_cache:
+         paths:
+           - node_modules
+         key: v1-dependencies-{{ checksum "package.json" }}
