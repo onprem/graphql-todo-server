@@ -13,20 +13,16 @@ jobs:
       - checkout
 
       - restore_cache:
-        keys:
-          - v1-dependencies-{{ checksum "package.json" }}
-          # fallback to latest cache if exact match not found
-          - v1-dependencies-
+         keys:
+           - v1-dependencies-{{ checksum "package.json" }}
+           # fallback to latest cache if exact match not found
+           - v1-dependencies-
 
-      - run:
-        name: Install dependencies
-        command: yarn
+      - run: yarn
 
-      - run:
-        name: Run tests
-        command: yarn test
+      - run: yarn test
 
       - save_cache:
-        paths:
-          - node_modules
-        key: v1-dependencies-{{ checksum "package.json" }}
+         paths:
+           - node_modules
+         key: v1-dependencies-{{ checksum "package.json" }}
