@@ -119,10 +119,7 @@ const resolvers = {
 					code: '200',
 					success: true,
 					message: 'successfully added ToDo',
-					user: {
-						id: context.id,
-						email: context.email
-					}
+					toDo: toDo
 				}
 			}
 			else
@@ -155,10 +152,7 @@ const resolvers = {
 					code: '200',
 					success: true,
 					message: 'successfully toggled ToDo',
-					user: {
-						id: context.id,
-						email: context.email
-					}
+					toDo: toDo
 				}
 			}
 			else
@@ -176,10 +170,7 @@ const resolvers = {
 					code: '200',
 					success: true,
 					message: 'successfully removed ToDo',
-					user: {
-						id: context.id,
-						email: context.email
-					}
+					toDo: toDo
 				}
 			}
 			else
