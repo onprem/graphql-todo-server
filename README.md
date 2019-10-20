@@ -12,11 +12,15 @@ git clone git@github.com:prmsrswt/graphql-todo-server.git
 
 **Yarn**
 
+If you are using Yarn.
+
 ```bash
 yarn
 ```
 
 **NPM**
+
+Or if you are using NPM.
 
 ```bash
 npm install
