@@ -18,7 +18,7 @@ We strictly use **Yarn**. Please do not use **NPM**.
 
 You will need a running **MongoDB** server.
 
-**Environment Variavles**
+**Environment Variables**
 
 Create a file called `.env` using `.env.sample` as a template.
 
